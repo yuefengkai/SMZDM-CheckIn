@@ -1,32 +1,66 @@
+#!/usr/bin/python
+# -*- coding: UTF-8 -*-
 
-import urllib
-import urllib2
-import cookielib
+import cookielib,urllib2
+import urllib,json
+class SMZDM(object):
 
-cj = cookielib.CookieJar()
-opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cj))
-opener.addheaders = [('User-Agent', ':Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36')]
-urllib2.install_opener(opener)
-req = urllib2.Request("https://zhiyou.smzdm.com/user/login/ajax_check", urllib.urlencode({"username": "用户名", "password": "密码"}))
-req.add_header("Referer", "https://zhiyou.smzdm.com")
+    def __init__(self):
 
-resp = urllib2.urlopen(req);
+        self.baseUrl = "https://zhiyou.smzdm.com"
+        self.cookies = cookielib.CookieJar()
+        self.opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(self.cookies))
 
-# for index, cookie in enumerate(cj):
-#     print '[',index, ']',cookie;
+    # 模拟登录
+    def login(self):
+        form = {"username": "账户名", "password": "密码"}
 
-str=resp.read().encode("utf-8")
+        postdata = urllib.urlencode(form)
 
-print str
+        headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:23.0) Gecko/20100101 Firefox/23.0',"Referer":"https://zhiyou.smzdm.com"}
+
+        urllib2.install_opener(self.opener)
+
+        req = urllib2.Request(self.baseUrl+"/user/login/ajax_check",data=postdata,headers=headers)
+
+        req.add_header("Referer", "https://zhiyou.smzdm.com")
+
+        resp = urllib2.urlopen(req)
+
+        #for index, cookie in enumerate(self.cookies):
+        #   print '[',index, ']',cookie;
+
+        str = resp.read().encode("utf-8")
+
+        print str
+
+        a = json.loads(str)
+
+        if a['error_code']==0:
+            return True
+        else:
+            return False
+
+    # 签到
+    def checkin(self):
+
+        headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:23.0) Gecko/20100101 Firefox/23.0',"Referer":"https://zhiyou.smzdm.com"}
+
+        urllib2.install_opener(self.opener)
+
+        req = urllib2.Request(self.baseUrl+"/user/checkin/jsonp_checkin?callback=jQuery1124009342530301322993_1492518882274&_=1492518882276", headers=headers)
+
+        resp = urllib2.urlopen(req)
+
+        # for index, cookie in enumerate(self.cookies):
+        #   print '[',index, ']',cookie;
+
+        str = resp.read().encode("utf-8")
+
+        print str
 
 
-opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cj))
-opener.addheaders = [('User-Agent', ':Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36')]
-urllib2.install_opener(opener)
-req = urllib2.Request("http://zhiyou.smzdm.com/user/checkin/jsonp_checkin?callback=jQuery1124009342530301322993_1492518882274&_=1492518882276")
-req.add_header("Referer", "https://zhiyou.smzdm.com")
-
-resp = urllib2.urlopen(req);
-
-str=resp.read().encode("utf-8")
-print str
+if __name__ == '__main__':
+    smzdm = SMZDM()
+    if smzdm.login():
+        smzdm.checkin()
